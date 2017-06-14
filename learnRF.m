@@ -12,13 +12,13 @@ datasets_names = {
     %'CreditApprovalDownsampledFurther' 
     %'GermanCreditDownsampledFurther'
     %'IonosphereDownsampledFurther' 
-    %'MammographicMassDownsampled'
+    'MammographicMassDownsampled'
     %'MushroomDownsampled' 
     %'SpectHeartDownsampledFurther' 
-    'TicTacToe'
+    %'TicTacToe'
     %'VehicleDownsampledFurther' 
-    'WineDownsampled'
-    'NurseryDownsampledFurther'
+    %'WineDownsampled'
+    %'NurseryDownsampledFurther'
 };
 %datasets_names = {
 %    'TicTacToe'
