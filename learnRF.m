@@ -7,18 +7,18 @@
 
 %% put the names of datasets in a cell array of strings
 datasets_names = {
-    %'BreastCancerWisconsinDownsampled' 
-    %'CarEvaluation'
-    %'CreditApprovalDownsampledFurther' 
-    %'GermanCreditDownsampledFurther'
-    %'IonosphereDownsampledFurther' 
-    'MammographicMassDownsampled'
-    %'MushroomDownsampled' 
-    %'SpectHeartDownsampledFurther' 
-    %'TicTacToe'
-    %'VehicleDownsampledFurther' 
-    %'WineDownsampled'
-    %'NurseryDownsampledFurther'
+    'BreastCancerWisconsinDownsampled' 
+    'CarEvaluation'
+    'CreditApprovalDownsampledFurther' 
+    'GermanCreditDownsampledFurther'
+    'IonosphereDownsampledFurther' 
+    %'MammographicMassDownsampled'
+    'MushroomDownsampled' 
+    'SpectHeartDownsampledFurther' 
+    'TicTacToe'
+    'VehicleDownsampledFurther' 
+    'WineDownsampled'
+    'NurseryDownsampledFurther'
 };
 %datasets_names = {
 %    'TicTacToe'
@@ -185,55 +185,59 @@ for kx = 1:numel(datasets_names)
     
     % learn random forests
     
-    C1 = {'SampleSize', 'ForestSize', 'RF-Training%', 'RF-Testing%'};
-    for ix = 1:numel(sample_sizes_array)
-        forest_sizes = [1:1:9 10:10:90 100:100:1000];
-        for I = 1:numel(forest_sizes)
-            C2 = cell(1,4);
-            sum_accuracy_train = 0;
-            sum_accuracy_test = 0;
-            for jx = 1:rep
-                % randomly split
-                rp = randperm(num_samples);
-                train_inds = rp(1:sample_sizes_array(ix));
-                test_inds = rp(sample_sizes_array(ix)+1:end);
+    for N = [50 100 200]
+        C1 = {'SampleSize', 'ForestSize', 'RF-Training%', 'RF-Testing%'};
+        for ix = 1:numel(sample_sizes_array)
+            forest_sizes = [1:1:9 10:10:90 100:100:1000];
+            for I = 1:numel(forest_sizes)
+                C2 = cell(1,4);
+                sum_accuracy_train = 0;
+                sum_accuracy_test = 0;
+                for jx = 1:rep
+                    % randomly split
+                    rp = randperm(num_samples);
+                    train_inds = rp(1:sample_sizes_array(ix));
+                    test_inds = rp(sample_sizes_array(ix)+1:end);
+                    
+                    train_data = features(train_inds, :);
+                    train_labels = labels(train_inds);
+                    test_data = features(test_inds, :);
+                    test_labels = labels(test_inds);
+                    
+                    B = TreeBagger(forest_sizes(I), train_data, train_labels, 'fboot', double(N)/size(train_data, 1), 'samplewithreplacement', 'off');
+                    %             tc = fitctree(train_data, train_labels);
+                    
+                    preds_train = predict(B, train_data);
+                    preds_train = cellfun(@(x) str2double(x), preds_train);
+                    preds_test = predict(B, test_data);
+                    preds_test = cellfun(@(x) str2double(x), preds_test);
+                    
+                    sum_accuracy_train = sum_accuracy_train + sum(preds_train == train_labels)/numel(train_labels);
+                    sum_accuracy_test = sum_accuracy_test + sum(preds_test == test_labels)/numel(test_labels);
+                end
                 
-                train_data = features(train_inds, :);
-                train_labels = labels(train_inds);
-                test_data = features(test_inds, :);
-                test_labels = labels(test_inds);
-                
-                B = TreeBagger(forest_sizes(I), train_data, train_labels, 'fboot', double(100)/size(train_data, 1), 'samplewithreplacement', 'off');
-                %             tc = fitctree(train_data, train_labels);
-                
-                preds_train = predict(B, train_data);
-                preds_train = cellfun(@(x) str2double(x), preds_train);
-                preds_test = predict(B, test_data);
-                preds_test = cellfun(@(x) str2double(x), preds_test);
-                
-                sum_accuracy_train = sum_accuracy_train + sum(preds_train == train_labels)/numel(train_labels);
-                sum_accuracy_test = sum_accuracy_test + sum(preds_test == test_labels)/numel(test_labels);
+                %             view(B.Trees{1}, 'mode', 'graph')
+                %             view(tc,'Mode','Graph')
+                C2{1,1} = sample_sizes_array(ix);
+                C2{1,2} = forest_sizes(I);
+                C2{1,3} = sum_accuracy_train/rep;
+                C2{1,4} = sum_accuracy_test/rep;
+                C1 = [C1;C2];
+                %     celldisp(sum_accuracy_testing/rep)
             end
             
-            %             view(B.Trees{1}, 'mode', 'graph')
-            %             view(tc,'Mode','Graph')
-            C2{1,1} = sample_sizes_array(ix);
-            C2{1,2} = forest_sizes(I);
-            C2{1,3} = sum_accuracy_train/rep;
-            C2{1,4} = sum_accuracy_test/rep;
-            C1 = [C1;C2];
-            %     celldisp(sum_accuracy_testing/rep)
         end
         
+        % write results to file
+        result_filename = '/Users/n01237497/Codes/RandomForestExp/';
+        result_filename = strcat(result_filename,datasets_names(kx));
+        result_filename = strcat(result_filename,'/sumRF');
+        result_filename = strcat(result_filename,num2str(N));
+        result_filename = strcat(result_filename,'.txt');
+        fid = fopen(char(result_filename), 'w') ;
+        fprintf(fid, '%s,', C1{1,1:end-1}) ;
+        fprintf(fid, '%s\n', C1{1,end}) ;
+        fclose(fid) ;
+        dlmwrite(char(result_filename), C1(2:end,:), '-append') ;
     end
-    
-    % write results to file
-    result_filename = '/Users/n01237497/Codes/RandomForestExp/';
-    result_filename = strcat(result_filename,datasets_names(kx));
-    result_filename = strcat(result_filename,'/sumRF.txt');
-    fid = fopen(char(result_filename), 'w') ;
-    fprintf(fid, '%s,', C1{1,1:end-1}) ;
-    fprintf(fid, '%s\n', C1{1,end}) ;
-    fclose(fid) ;
-    dlmwrite(char(result_filename), C1(2:end,:), '-append') ;
 end
