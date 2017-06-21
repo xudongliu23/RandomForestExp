@@ -12,8 +12,8 @@ declare -a names=(
 	'TicTacToe'
 	'VehicleDownsampledFurther'
 	'WineDownsampled'
-	'MammographicMassDownsampled'
 	'NurseryDownsampledFurther'
+	#'MammographicMassDownsampled' # it does not have 1000 strict examples
 )
 
 cmd_pars='matlab -nosplash -nodesktop -r "'
