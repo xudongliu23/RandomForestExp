@@ -7,18 +7,18 @@
 
 %% put the names of datasets in a cell array of strings
 datasets_names = {
-    'BreastCancerWisconsinDownsampled' 
-    'CarEvaluation'
-    'CreditApprovalDownsampledFurther' 
-    'GermanCreditDownsampledFurther'
-    'IonosphereDownsampledFurther' 
-    %'MammographicMassDownsampled'
-    'MushroomDownsampled' 
-    'SpectHeartDownsampledFurther' 
-    'TicTacToe'
-    'VehicleDownsampledFurther' 
-    'WineDownsampled'
-    'NurseryDownsampledFurther'
+    %'BreastCancerWisconsinDownsampled' 
+    %'CarEvaluation'
+    %'CreditApprovalDownsampledFurther' 
+    %'GermanCreditDownsampledFurther'
+    %'IonosphereDownsampledFurther' 
+    'MammographicMassDownsampled'
+    %'MushroomDownsampled' 
+    %'SpectHeartDownsampledFurther' 
+    %'TicTacToe'
+    %'VehicleDownsampledFurther' 
+    %'WineDownsampled'
+    %'NurseryDownsampledFurther'
 };
 %datasets_names = {
 %    'TicTacToe'
@@ -132,7 +132,11 @@ for kx = 1:numel(datasets_names)
     num_sample_sizes = 1;
     sample_sizes_array = zeros(1,num_sample_sizes);
     %sample_sizes_array(1) = int64(0.7 * num_samples);
-    sample_sizes_array(1) = int64(1000);
+    if num_samples > 1000
+        sample_sizes_array(1) = 1000;
+    else
+        sample_sizes_array(1) = num_samples-100;
+    end
     
     rep = 10;
     
